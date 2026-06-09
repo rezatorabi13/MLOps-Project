@@ -1,0 +1,6 @@
+# Development / test-only dependencies.
+# Kept separate from requirements.txt so the production container stays lean:
+# the running API does NOT need a test runner or HTTP test client.
+# CI installs BOTH files; the Docker image installs only requirements.txt.
+pytest==9.0.3
+httpx==0.28.1

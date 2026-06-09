@@ -1,0 +1,40 @@
+# GitHub Actions CI workflow — the "quality gate" robot.
+# Every push and pull request to main runs the test suite automatically.
+# If a test fails, GitHub marks the commit with a red X so you catch breakage early.
+name: CI
+
+# WHEN this workflow runs.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    # The virtual machine GitHub spins up for us (a fresh Ubuntu box each time).
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Check out your repository's code onto the runner.
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      # 2. Install Python (matching your local 3.13). pip caching speeds up reruns.
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      # 3. Install runtime + test dependencies.
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-dev.txt
+
+      # 4. Run the tests. -v prints each test name and PASS/FAIL.
+      #    test_app.py points MODEL_URI at the committed serving_model/ folder,
+      #    so no MLflow registry or network is needed here.
+      - name: Run tests
+        run: pytest -v
