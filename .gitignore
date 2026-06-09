@@ -1,0 +1,13 @@
+# --- Python ---
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# --- Virtual environment (huge; never commit) ---
+.venv/
+
+# --- MLflow local stores (machine-specific; not needed in git) ---
+# The registry DB and raw experiment artifacts stay local. The model we
+# actually serve lives in serving_model/, which IS committed (CI needs it).
+mlruns/
+mlflow.db
