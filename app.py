@@ -25,6 +25,7 @@ import mlflow
 import pandas as pd
 from fastapi import FastAPI
 from mlflow import MlflowClient
+from prometheus_fastapi_instrumentator import Instrumentator
 from pydantic import BaseModel, Field
 
 MODEL_NAME = "wine-classifier"
@@ -67,6 +68,16 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Wine Classifier API", version="1.0", lifespan=lifespan)
+
+# ---------------------------------------------------------------------------
+# Observability (Module 5). One line wires up Prometheus metrics:
+#   * .instrument(app) — wrap every endpoint to record request count, latency,
+#     and status codes automatically.
+#   * .expose(app)     — publish those numbers at GET /metrics in the plain-text
+#     format Prometheus scrapes.
+# So /metrics gives you live, per-endpoint telemetry with no manual counting.
+# ---------------------------------------------------------------------------
+Instrumentator().instrument(app).expose(app)
 
 
 # ---------------------------------------------------------------------------

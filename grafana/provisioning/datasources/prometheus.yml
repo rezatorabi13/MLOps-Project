@@ -1,0 +1,11 @@
+# Grafana "provisioning": auto-configure a data source on startup so you don't
+# have to click through the UI to connect Grafana to Prometheus.
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    # Reach Prometheus by its compose SERVICE NAME on the shared network.
+    url: http://prometheus:9090
+    isDefault: true

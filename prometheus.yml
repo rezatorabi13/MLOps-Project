@@ -1,0 +1,17 @@
+# Prometheus configuration (Module 5).
+# Tells Prometheus WHAT to scrape, and HOW OFTEN.
+
+global:
+  # How often Prometheus polls each target's /metrics page.
+  # 5s is snappy for a demo; production is often 15-60s.
+  scrape_interval: 5s
+
+scrape_configs:
+  # One "job" = a group of targets that belong together.
+  - job_name: wine-classifier-api
+    # The endpoints to scrape. Prometheus appends /metrics automatically.
+    # "api" is the docker-compose SERVICE NAME of the Wine API container.
+    # On the shared compose network, Docker's DNS resolves "api" to that
+    # container — so no host.docker.internal needed; everyone's in Docker.
+    static_configs:
+      - targets: ["api:8000"]

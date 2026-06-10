@@ -1,0 +1,48 @@
+# =============================================================================
+# docker-compose.yml — run the whole observability stack with ONE command.
+#
+#   docker compose up -d --build      (start everything, rebuilding the API)
+#   docker compose down               (stop and remove everything)
+#
+# Compose creates a single private network for these services. Inside it,
+# each service is reachable by its NAME (api, prometheus, grafana) — which is
+# why we no longer need host.docker.internal. They're all in Docker together.
+# =============================================================================
+services:
+
+  # ---- Your model API (rebuilt from the Dockerfile, now WITH /metrics) ----
+  api:
+    build: .                      # build the image from the Dockerfile here
+    image: wine-classifier:1.1    # tag the freshly built image
+    container_name: wine-api
+    ports:
+      - "8000:8000"               # laptop:container — browse http://localhost:8000
+
+  # ---- Prometheus: scrapes the API's /metrics and stores the history ----
+  prometheus:
+    image: prom/prometheus        # pulled ready-made from Docker Hub
+    container_name: prometheus
+    ports:
+      - "9090:9090"               # http://localhost:9090
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml   # feed it our config
+    depends_on:
+      - api
+
+  # ---- Grafana: dashboards that read from Prometheus ----
+  grafana:
+    image: grafana/grafana        # pulled ready-made from Docker Hub
+    container_name: grafana
+    ports:
+      - "3000:3000"               # http://localhost:3000
+    volumes:
+      # Auto-configure the Prometheus data source on startup (no clicking).
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      # Persist Grafana's data (dashboards/settings) across restarts.
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+
+# A named volume so Grafana remembers your dashboards even after `down`.
+volumes:
+  grafana-data:
