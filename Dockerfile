@@ -19,7 +19,10 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 4. Copy the application code and the portable model into the image.
+#    Both the API (app.py) and the Kafka consumer (consumer.py) ship in the
+#    same image; the docker-compose `command:` decides which one runs.
 COPY app.py .
+COPY consumer.py .
 COPY serving_model/ ./serving_model/
 
 # 5. Configuration via environment variables (12-factor style). This tells

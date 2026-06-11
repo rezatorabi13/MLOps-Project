@@ -29,6 +29,49 @@ services:
     depends_on:
       - api
 
+  # ---- Kafka broker (Module 6): the durable event log/queue ----
+  # Single-node, KRaft mode (no Zookeeper needed in modern Kafka).
+  kafka:
+    image: apache/kafka:3.8.0
+    container_name: kafka
+    ports:
+      # Host access for producer.py running on your laptop (localhost:29092).
+      - "29092:29092"
+    environment:
+      # --- KRaft: this one node is BOTH the broker and the controller ---
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      # --- Listeners: HOW clients reach the broker ---
+      # Two doors: one for OTHER CONTAINERS (kafka:9092), one for the
+      # HOST/laptop (localhost:29092). "advertised" = the address the broker
+      # TELLS each client to use. This dual-listener setup is the classic
+      # Kafka-on-Docker pattern that avoids "it connects but then times out".
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,HOST://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      # --- Single-node replication settings (can't replicate beyond 1 node) ---
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+
+  # ---- Streaming inference consumer (Module 6) ----
+  # Reuses the SAME image as the API, but overrides the start command to run
+  # consumer.py instead of uvicorn. Reads wine-requests, writes wine-predictions.
+  consumer:
+    image: wine-classifier:1.1     # built by the `api` service above
+    container_name: wine-consumer
+    command: ["python", "consumer.py"]
+    environment:
+      MODEL_URI: /app/serving_model
+      KAFKA_BOOTSTRAP: kafka:9092   # reach the broker by service name (internal)
+    depends_on:
+      - kafka
+    restart: on-failure            # if it starts before Kafka is ready, retry
+
   # ---- Grafana: dashboards that read from Prometheus ----
   grafana:
     image: grafana/grafana        # pulled ready-made from Docker Hub
