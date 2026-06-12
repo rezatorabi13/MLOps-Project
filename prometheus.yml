@@ -5,6 +5,12 @@ global:
   # How often Prometheus polls each target's /metrics page.
   # 5s is snappy for a demo; production is often 15-60s.
   scrape_interval: 5s
+  # How often Prometheus re-evaluates the alerting rules below.
+  evaluation_interval: 5s
+
+# Load the SRE alerting rules (Module 7) from this file.
+rule_files:
+  - alert.rules.yml
 
 scrape_configs:
   # One "job" = a group of targets that belong together.

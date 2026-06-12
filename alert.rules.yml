@@ -1,0 +1,42 @@
+# Prometheus alerting rules (Module 7 — SRE).
+# Each rule turns an SLO into an automatic alert: if the condition (expr) holds
+# for the `for:` duration, the alert moves pending -> firing. Without
+# Alertmanager these show in Prometheus's "Alerts" tab (we kept it simple).
+
+groups:
+  - name: wine-api-slo-alerts
+    rules:
+
+      # --- Availability SLO: the API must be scrapeable ("up") ---
+      # `up` is a metric Prometheus auto-generates per target: 1 = reachable,
+      # 0 = scrape failed. If it's 0 for 30s, the API is effectively down.
+      - alert: APIDown
+        expr: up{job="wine-classifier-api"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Wine API is down"
+          description: "Prometheus can't scrape the API (up == 0) for over 30s."
+
+      # --- Error-rate SLO: < 5% server (5xx) errors ---
+      # (fraction of 5xx responses over the last minute). No traffic = no alert.
+      - alert: HighErrorRate
+        expr: sum(rate(http_requests_total{status="5xx"}[1m])) / sum(rate(http_requests_total[1m])) > 0.05
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate (>5% of requests are 5xx)"
+          description: "Server-error rate has exceeded the 5% SLO for 1 minute."
+
+      # --- Latency SLO: 95% of requests under 200ms ---
+      # histogram_quantile turns the latency buckets into a p95 estimate.
+      - alert: HighLatencyP95
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) > 0.2
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "p95 latency above 200ms"
+          description: "95th-percentile request latency has exceeded the 200ms SLO."
