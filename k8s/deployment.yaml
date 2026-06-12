@@ -1,0 +1,56 @@
+# Kubernetes Deployment (Module 8) — runs and maintains copies of the API.
+#
+# A Deployment's job: "always keep N healthy copies of this image running."
+# If a pod crashes or a node dies, Kubernetes recreates it automatically.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wine-api
+  labels:
+    app: wine-api
+spec:
+  # Run TWO copies (pods) for load-balancing + availability.
+  replicas: 2
+
+  # How the Deployment knows which pods are "its" pods: match this label.
+  selector:
+    matchLabels:
+      app: wine-api
+
+  # The template = the recipe for each pod the Deployment creates.
+  template:
+    metadata:
+      labels:
+        app: wine-api          # must match the selector above
+    spec:
+      containers:
+        - name: wine-api
+          image: wine-classifier:1.1
+          # Use the local image; don't try to pull from a remote registry.
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          # Config via env vars (same values the Dockerfile/compose used).
+          env:
+            - name: MODEL_URI
+              value: /app/serving_model
+            - name: MODEL_VERSION
+              value: "1"
+
+          # --- Health probes: K8s pings /health (your Module 2 endpoint) ---
+          # readiness: "is this pod ready to RECEIVE traffic?" If it fails,
+          #   K8s stops sending requests to this pod (but keeps it running).
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          # liveness: "is this pod still ALIVE?" If it fails repeatedly,
+          #   K8s kills and restarts the pod (self-healing).
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 15

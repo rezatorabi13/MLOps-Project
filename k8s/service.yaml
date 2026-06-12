@@ -1,0 +1,19 @@
+# Kubernetes Service (Module 8) — a stable address in front of the pods.
+#
+# Pods are disposable: they come and go, each with a different IP. A Service
+# gives them ONE permanent name/IP and load-balances requests across whichever
+# pods are currently healthy (it finds them by the label selector).
+apiVersion: v1
+kind: Service
+metadata:
+  name: wine-api
+spec:
+  # Send traffic to every pod carrying this label (the Deployment's pods).
+  selector:
+    app: wine-api
+  ports:
+    - port: 8000          # the port the Service listens on
+      targetPort: 8000    # the port on the pod/container to forward to
+  # ClusterIP = reachable only INSIDE the cluster. We'll use `kubectl
+  # port-forward` to reach it from the laptop (simplest for local dev).
+  type: ClusterIP
