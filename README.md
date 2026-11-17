@@ -1,4 +1,27 @@
-# Wine Classifier — End-to-End MLOps Pipeline
+<p align="center">
+  <img src="MLOps%20Pipeline%20Infographic.png" alt="MLOps Project — End-to-End Machine Learning Pipeline: Train, Track, Serve, Deploy, Monitor" width="100%">
+</p>
+
+<h1 align="center">Wine Classifier — End-to-End MLOps Pipeline</h1>
+
+<p align="center">
+  <b>Train · Track · Serve · Deploy · Monitor</b>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/scikit--learn-F7931E?logo=scikitlearn&logoColor=white" alt="scikit-learn">
+  <img src="https://img.shields.io/badge/MLflow-0194E2?logo=mlflow&logoColor=white" alt="MLflow">
+  <img src="https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white" alt="FastAPI">
+  <img src="https://img.shields.io/badge/Kafka-231F20?logo=apachekafka&logoColor=white" alt="Kafka">
+  <img src="https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white" alt="Docker">
+  <img src="https://img.shields.io/badge/Kubernetes-326CE5?logo=kubernetes&logoColor=white" alt="Kubernetes">
+  <img src="https://img.shields.io/badge/Prometheus-E6522C?logo=prometheus&logoColor=white" alt="Prometheus">
+  <img src="https://img.shields.io/badge/Grafana-F46800?logo=grafana&logoColor=white" alt="Grafana">
+  <img src="https://img.shields.io/badge/GitHub_Actions-2088FF?logo=githubactions&logoColor=white" alt="GitHub Actions">
+</p>
+
+---
 
 A hands-on MLOps project that takes a single scikit-learn model (wine
 classification) and wraps it in a complete production lifecycle: experiment
